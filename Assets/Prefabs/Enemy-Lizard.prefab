@@ -259,10 +259,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcd69160f4d91c5489227624e1340ecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  maxHealth: 2
-  contactDamage: 2
   moveSpeed: 2
   playerTag: Player
+  hitCheck: {fileID: 0}
+  hitStunTime: 0.25
+  Health: 0
 --- !u!95 &8212295299113388245
 Animator:
   serializedVersion: 7

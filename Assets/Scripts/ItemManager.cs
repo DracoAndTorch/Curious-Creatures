@@ -10,6 +10,11 @@ public class ItemController : MonoBehaviour
         Mana,
         MaxMana
     }
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
 
     static public void Activate(type item, GameObject player)
     {

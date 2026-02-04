@@ -59,7 +59,6 @@ public class PlayerManager : MonoBehaviour
 
     [Header("Game Objects")]
     public GameObject player;
-    public GameObject Scenes;
 
     [Header("Attack")]
     public Transform attackPoint;
@@ -127,6 +126,9 @@ public class PlayerManager : MonoBehaviour
         if (spriteRenderer != null)
             originalColor = spriteRenderer.color;
 
+        enemyLayer = LayerMask.NameToLayer("Enemy");
+        playerLayer = LayerMask.NameToLayer("Player");
+
         // Initialize UI bar
         UIManager.Instance.SetHealth(health);
     }
@@ -187,10 +189,6 @@ public class PlayerManager : MonoBehaviour
                 break;
             case "MKit":
                 ItemController.Activate(ItemController.type.MaxHeal, player);
-                break;
-            case "LevelTransition":;
-                SceneController scene = Scenes.GetComponent<SceneController>();
-                scene.LoadScene();
                 break;
         }
         Destroy(collision.gameObject);
@@ -419,11 +417,9 @@ public class PlayerManager : MonoBehaviour
     private IEnumerator InvincibleCoroutine()
     {
         isInvincible = true;
-        int player = LayerMask.NameToLayer(playerLayer.ToString());
-        int enemy = LayerMask.NameToLayer(enemyLayer.ToString());
 
         // Disable collision between player ↔ enemy
-        Physics2D.IgnoreLayerCollision(player, enemy, true);
+        Physics2D.IgnoreLayerCollision(playerLayer, enemyLayer, true);
 
         float endTime = Time.time + invincibleTime;
 
@@ -439,7 +435,7 @@ public class PlayerManager : MonoBehaviour
 
         // Restore normal state
         spriteRenderer.color = originalColor;
-        Physics2D.IgnoreLayerCollision(player, enemy, false);
+        Physics2D.IgnoreLayerCollision(this.player.layer, enemyLayer, false);
 
         isInvincible = false;
     }
