@@ -1,90 +1,53 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 public class LevelTransition : MonoBehaviour
 {
-    [Tooltip("Exact scene name (must be in Build Settings)")]
-    public string targetScene = "Karsiori_Stage2";
+    public string[] scenes;
+    private int currentScene;
 
-    [Tooltip("Delay before starting to load (seconds)")]
-    public float delayBeforeLoad = 0.5f;
-
-    [Tooltip("If true, will try to disable a PlayerController script on the player during the load")]
-    public bool temporarilyDisablePlayerController = false;
-
-    [Tooltip("Name of the player controller component (case sensitive). Example: PlayerController")]
-    public string playerControllerScriptName = "Playercontroller";
-
-    private bool hasTransitioned = false;
-
-    private void Reset()
+    private void Start()
     {
-        // sensible defaults when first attached
-        targetScene = "Karsiori_Stage2";
-        delayBeforeLoad = 0.5f;
-        temporarilyDisablePlayerController = false;
-        playerControllerScriptName = "Playercontroller";
+        currentScene = getScene();
+        if (currentScene == -1)
+        {
+            Debug.Log("SCENE NOT LISTED");
+        }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    int getScene()
     {
-        if (hasTransitioned) return;
-
-        if (!other.CompareTag("Player"))
+        Scene scene = SceneManager.GetActiveScene();
+        int thisScene = -1;
+        for (int i = 0; i < scenes.Length - 1; i++)
         {
-            Debug.Log($"LevelTransition: collided with non-player object '{other.gameObject.name}'");
+            if(scenes[i] == scene.name)
+            {
+                thisScene = i;
+            }
+        }
+        return thisScene;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag != "Player")
+        {
             return;
         }
 
-        hasTransitioned = true;
-        Debug.Log($"LevelTransition: Player entered trigger. Preparing to load '{targetScene}' in {delayBeforeLoad} seconds.");
-
-        // Optionally disable player's movement script (only temporarily)
-        MonoBehaviour playerController = null;
-        if (temporarilyDisablePlayerController && !string.IsNullOrEmpty(playerControllerScriptName))
-        {
-            var comp = other.GetComponent(playerControllerScriptName);
-            if (comp is MonoBehaviour mb)
-            {
-                playerController = mb;
-                mb.enabled = false;
-                Debug.Log("LevelTransition: Disabled player controller '" + playerControllerScriptName + "'.");
-            }
-            else
-            {
-                Debug.LogWarning($"LevelTransition: Could not find component named '{playerControllerScriptName}' on player to disable.");
-            }
-        }
-
-        StartCoroutine(LoadSceneAsyncCoroutine(other.gameObject, playerController));
+        Continue();
     }
 
-    private IEnumerator LoadSceneAsyncCoroutine(GameObject player, MonoBehaviour disabledController)
+    public void Continue()
     {
-        yield return new WaitForSeconds(delayBeforeLoad);
-
-        // Start async load
-        var asyncOp = SceneManager.LoadSceneAsync(targetScene);
-        if (asyncOp == null)
+        if (currentScene > scenes.Length - 1)
         {
-            Debug.LogError($"LevelTransition: Failed to start loading scene '{targetScene}'. Make sure it is added to Build Settings.");
-            if (disabledController != null) disabledController.enabled = true;
-            yield break;
+            SceneManager.LoadScene(scenes[0]);
         }
-
-        // Optionally allow the scene to load in the background and activate immediately when ready:
-        asyncOp.allowSceneActivation = true;
-
-        // wait until load completes
-        while (!asyncOp.isDone)
+        else
         {
-            // progress will go 0..0.9, then isDone becomes true once activation finished
-            yield return null;
+            SceneManager.LoadScene(scenes[currentScene + 1]);
         }
-
-        // If we disabled the player's controller and you want it re-enabled when returning to this scene (unlikely),
-        // you'd re-enable it here only if you plan to stay in this object. Usually we don't re-enable after a scene change.
-        Debug.Log($"LevelTransition: Scene '{targetScene}' loaded.");
     }
 }
