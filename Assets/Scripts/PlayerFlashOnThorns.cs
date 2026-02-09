@@ -6,8 +6,8 @@ public class PlayerFlashOnThorns : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
     public Tilemap tilemap;
-    public TileBase thornTile;
-    public Color flashColor = Color.white; // Flash pure white
+    public TileBase[] thornTile;
+    public Color flashColor = Color.red; // Flash pure red
     public float flashDuration = 0.2f;
 
     private Color originalColor;
@@ -39,16 +39,19 @@ public class PlayerFlashOnThorns : MonoBehaviour
         Vector3Int cell = tilemap.WorldToCell(feet);
         TileBase tile = tilemap.GetTile(cell);
 
-        if (tile == thornTile && !isFlashing)
+        for (int i = 0; i < thornTile.Length - 1; i++)
         {
-            StartCoroutine(Flash());
-        }
+            if (tile == thornTile[i] && !isFlashing)
+            {
+                StartCoroutine(Flash());
+            }
+        }   
     }
 
     private IEnumerator Flash()
     {
         isFlashing = true;
-        spriteRenderer.color = flashColor; // Turn white
+        spriteRenderer.color = flashColor; // Turn red
         yield return new WaitForSeconds(flashDuration);
         spriteRenderer.color = originalColor; // Restore original color
         isFlashing = false;
